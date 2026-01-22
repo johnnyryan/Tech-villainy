@@ -8,16 +8,20 @@ export const auditCEO = async (ceoName: string): Promise<Misdeed[]> => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Perform a rigorous regulatory audit of the CEO: ${ceoName}. 
+      contents: `Perform a rigorous regulatory and historical audit of the CEO: ${ceoName} covering the period 2000-2026. 
       
-      Look for:
-      1. Personal unscrupulous behavior (e.g., doomsday bunkers, survivalist prepping, avoiding civic duties).
-      2. Corporate malfeasance (GDPR breaches, anti-trust violations, worker exploitation).
-      3. Dangerous political activities (funding anti-human rights groups, boosting extremism/far-right, abandoning ethical values for political leverage).
-      4. Anti-European lobbying (trying to dismantle EU safety/privacy laws).
+      Your goal is to find substantiated enforcement decisions, settlements, and investigation updates from reputable bodies (EU Commission, EDPB, FTC, high courts, etc.).
       
-      CRITICAL: Every entry MUST have a verified 'sourceUrl' pointing to a reputable news organization or official document.
-      ASSIGN a 'villainScore' from 0-100 based on the threat to European social cohesion and rule of law.`,
+      TONE: Humorous but strictly bureaucratic. Use phrases like "non-compliant", "regulatory friction", "administrative oversight".
+      TITLES: Plain, descriptive, and accurate descriptions of the harm caused. No humor in the title itself.
+      EXCERPT: Include a direct excerpt from a primary source.
+      
+      SCORING LOGIC:
+      - 1-100 scale.
+      - Prioritize harm to competition, privacy violations, and ethical failures.
+      
+      CRITICAL: Every entry MUST have a verified 'sourceUrl' pointing to official regulatory or high-reputation news pages.
+      Return the output as a JSON array of objects.`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -28,15 +32,17 @@ export const auditCEO = async (ceoName: string): Promise<Misdeed[]> => {
             properties: {
               title: { type: Type.STRING },
               description: { type: Type.STRING },
+              excerpt: { type: Type.STRING },
               date: { type: Type.STRING },
               villainScore: { type: Type.NUMBER },
+              mediaCount: { type: Type.NUMBER },
               tags: { 
                 type: Type.ARRAY, 
                 items: { type: Type.STRING } 
               },
               sourceUrl: { type: Type.STRING }
             },
-            required: ["title", "description", "date", "villainScore", "tags", "sourceUrl"]
+            required: ["title", "description", "excerpt", "date", "villainScore", "mediaCount", "tags", "sourceUrl"]
           }
         }
       }
