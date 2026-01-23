@@ -5,12 +5,13 @@ export interface Misdeed {
   company: string;
   title: string;
   description: string;
-  excerpt?: string; // Primary source excerpt (court transcript, etc.)
+  excerpt?: string; 
   date: string;
-  tags: string[];
-  villainScore: number; // 1 to 100
+  tags: TagType[];
+  villainScore: number; 
   sourceUrl?: string;
-  mediaCount: number; // Used internally for sorting logic
+  mediaCount: number; 
+  isEUDecision?: boolean;
 }
 
 export interface CEOStats {
@@ -20,22 +21,22 @@ export interface CEOStats {
   averageScore: number;
   incidentCount: number;
   avatar: string;
+  summary?: string;
 }
 
 export enum TagType {
-  Privacy = "Privacy Violation",
-  Monopoly = "Anti-Trust",
-  Tax = "Tax Evasion",
-  Ethics = "Ethical Malpractice",
-  Labor = "Worker Exploitation",
-  Ego = "Unchecked Hubris",
-  ChildSafety = "Child Safety / CSAM",
-  MinorPsych = "Minor Psychological Harm",
-  Extremism = "Boosting Extremism",
-  Media = "Harm to Journalism",
-  Environment = "Carbon Hubris",
-  Surveillance = "Dystopian Surveillance",
-  Regulatory = "Regulatory Action",
-  Legal = "Legal Case",
-  MarketDistortion = "Market Distortion"
+  ChildSafety = "endangering children",
+  IPTheft = "intellectual property theft",
+  Labor = "harming workers",
+  Spying = "spying",
+  Hubris = "unchecked hubris",
+  Predictions = "daft predictions",
+  Cheating = "cheating",
+  Democracy = "killing democracy",
+  Chicanery = "general chicanery",
+  LyingInvestors = "lying to investors",
+  LyingGov = "lying to government",
+  Journalism = "killing journalism",
+  Carbon = "carbon hubris",
+  Personal = "personal luxury & bunkers"
 }

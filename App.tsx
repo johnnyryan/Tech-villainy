@@ -1,43 +1,43 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, ShieldAlert, Trophy, LayoutDashboard, RefreshCw, Scale, Gavel, UserSearch, ChevronLeft, ChevronRight, AlertTriangle, Calendar, Filter, Briefcase, Stamp } from 'lucide-react';
-import { Misdeed, CEOStats, TagType } from './types';
+import { Trophy, RefreshCw, Scale, UserSearch, ClipboardList, Stamp, Coffee } from 'lucide-react';
+import { Misdeed, CEOStats } from './types';
 import { INITIAL_MISDEEDS, APP_NAME } from './constants';
-import MisdeedCard from './components/MisdeedCard';
 import Leaderboard from './components/Leaderboard';
 import SearchAudit from './components/SearchAudit';
 import { auditCEO } from './geminiService';
 
 const BUREAUCRATIC_MESSAGES = [
-  "Hunting Silicon Valley miscreants in our databases...",
-  "Applying the 30% Ego Tax to pending files...",
-  "Checking for minor safety GDPR violations...",
-  "Stamping 'NON-COMPLIANT' in triplicate...",
-  "Consulting the Court of Justice (Civilized Edition)...",
-  "Refilling the ink in our heaviest fine-stamping machine...",
+  "Auditing Silicon Valley visionary bros...",
+  "Calculating administrative hubris tax...",
+  "Applying GDPR compliance filters...",
+  "Verifying evidence in triplicate...",
+  "Consulting the European Court of Justice...",
+  "Stamping documents for review...",
+  "Refilling ink in the heavy-fine-stamping machine...",
+  "Searching for 'disruptive' data in the trash folder...",
   "Waiting for the printer to finish heating up...",
-  "Filing Form 27-B-Stroke-6 in duplicate..."
+  "Filing Directive 42-B-67 regarding chicanery...",
+  "Scanning bunkers for planning applications...",
+  "Cross-referencing carbon offsets with private jet fuel..."
 ];
 
-type SortMode = 'recency' | 'villainy' | 'oldest';
-type AppTab = 'leaderboard' | 'feed' | 'audit';
-
-const ITEMS_PER_PAGE = 20;
+type AppTab = 'leaderboard' | 'audit';
 
 const EuropeanFlagWatermark = () => (
   <div className="fixed inset-0 pointer-events-none z-[-1] flex items-center justify-center opacity-[0.03]">
-    <div className="relative w-[800px] h-[800px]">
+    <div className="relative w-full max-w-[800px] aspect-square">
       {[...Array(12)].map((_, i) => {
         const angle = (i * 30) * (Math.PI / 180);
-        const x = 400 + 300 * Math.cos(angle);
-        const y = 400 + 300 * Math.sin(angle);
+        const x = 50 + 40 * Math.cos(angle);
+        const y = 50 + 40 * Math.sin(angle);
         return (
           <div 
             key={i} 
-            className="absolute w-24 h-24 bg-blue-500"
+            className="absolute w-8 h-8 md:w-16 md:h-16 bg-blue-600"
             style={{ 
-              left: `${x}px`, 
-              top: `${y}px`,
+              left: `${x}%`, 
+              top: `${y}%`,
               clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
               transform: 'translate(-50%, -50%)'
             }}
@@ -49,32 +49,34 @@ const EuropeanFlagWatermark = () => (
 );
 
 const AppLogo = () => (
-  <div className="flex flex-col items-center justify-center mb-6">
-    <div className="relative w-24 h-24 flex items-center justify-center">
-      <div className="absolute inset-0 bg-blue-600/20 rounded-full animate-ping" />
-      <div className="relative z-10 p-5 bg-slate-900 border-4 border-blue-600 rounded-3xl rotate-3 shadow-2xl">
-        <div className="relative">
-          <Briefcase className="text-white mb-[-10px] ml-[-5px]" size={40} />
-          <Stamp className="text-red-600 absolute -bottom-2 -right-4 rotate-12" size={32} />
-        </div>
+  <div className="flex flex-col items-center justify-center mb-8 px-4">
+    <div className="relative w-20 h-20 md:w-28 md:h-28 flex items-center justify-center mb-4">
+      <div className="absolute inset-0 bg-blue-700/20 rounded-full border-2 border-dashed border-blue-500/30 animate-spin-slow" />
+      <div className="relative z-10 p-5 md:p-6 bg-slate-900 border-4 border-blue-600 rounded-lg shadow-2xl">
+        <Scale className="text-white" size={40} />
       </div>
+      <Stamp className="text-red-600 absolute -bottom-4 -right-4 rotate-12 drop-shadow-lg" size={40} />
+      <Coffee className="text-amber-900 absolute -top-4 -left-4 -rotate-12 opacity-40" size={24} />
     </div>
-    <div className="mt-4 text-center">
-      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 mb-1">Directorate-General for Mendacity</div>
-      <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic">The Registry</h1>
+    <div className="text-center max-w-lg">
+      <div className="text-[12px] md:text-[14px] font-black uppercase tracking-[0.4em] text-blue-500 mb-2 font-mono leading-tight">
+        Europe v bros
+      </div>
+      <h1 className="text-3xl md:text-6xl font-black tracking-tight text-white uppercase italic border-b-4 md:border-b-8 border-blue-700 pb-2 inline-block">
+        {APP_NAME}
+      </h1>
+      <p className="mt-4 text-[8px] md:text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] px-4">
+        Registry of Unchecked Ego & illegal business
+      </p>
     </div>
   </div>
 );
 
 const App: React.FC = () => {
   const [misdeeds, setMisdeeds] = useState<Misdeed[]>(INITIAL_MISDEEDS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortMode>('villainy'); 
   const [activeTab, setActiveTab] = useState<AppTab>('leaderboard');
-  const [currentPage, setCurrentPage] = useState(1);
   const [isAuditing, setIsAuditing] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(BUREAUCRATIC_MESSAGES[0]);
-  const [hubrisOnly, setHubrisOnly] = useState(false);
 
   useEffect(() => {
     let interval: number;
@@ -85,10 +87,6 @@ const App: React.FC = () => {
     }
     return () => window.clearInterval(interval);
   }, [isAuditing]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortBy, hubrisOnly]);
 
   const ceoStats = useMemo(() => {
     const statsMap: Record<string, CEOStats> = {};
@@ -101,183 +99,84 @@ const App: React.FC = () => {
           totalVillainy: 0,
           averageScore: 0,
           incidentCount: 0,
-          avatar: '' // Avatars removed
+          avatar: '' 
         };
       }
       statsMap[canonicalName].totalVillainy += m.villainScore;
       statsMap[canonicalName].incidentCount += 1;
       statsMap[canonicalName].averageScore = statsMap[canonicalName].totalVillainy / statsMap[canonicalName].incidentCount;
     });
-    return Object.values(statsMap).sort((a, b) => b.totalVillainy - a.totalVillainy);
+    // Limit to exactly 10 CEOs
+    return Object.values(statsMap).sort((a, b) => b.totalVillainy - a.totalVillainy).slice(0, 10);
   }, [misdeeds]);
-
-  const filteredMisdeeds = useMemo(() => {
-    return misdeeds
-      .filter(m => {
-        const matchesSearch = m.ceoName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              m.title.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesHubris = hubrisOnly ? m.tags.includes(TagType.Ego) : true;
-        return matchesSearch && matchesHubris;
-      })
-      .sort((a, b) => {
-        if (sortBy === 'recency') return new Date(b.date).getTime() - new Date(a.date).getTime();
-        if (sortBy === 'oldest') return new Date(a.date).getTime() - new Date(b.date).getTime();
-        return b.villainScore - a.villainScore;
-      });
-  }, [misdeeds, searchQuery, sortBy, hubrisOnly]);
-
-  const paginatedMisdeeds = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredMisdeeds.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredMisdeeds, currentPage]);
-
-  const totalPages = Math.ceil(filteredMisdeeds.length / ITEMS_PER_PAGE);
 
   const handleAudit = async (name: string) => {
     setIsAuditing(true);
     const results = await auditCEO(name);
     if (results.length > 0) {
-      setMisdeeds(prev => [...results, ...prev]);
-      setActiveTab('feed');
+      const factualResults = results.filter(r => !r.title.toLowerCase().includes('predicted') && !r.description.toLowerCase().includes('predicted'));
+      setMisdeeds(prev => [...factualResults, ...prev]);
+      setActiveTab('leaderboard');
     }
     setIsAuditing(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center text-slate-200 pb-12 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center text-slate-200 pb-12 relative overflow-hidden font-sans">
       <EuropeanFlagWatermark />
       
-      <div className="w-full bg-blue-700 h-2 flex items-center justify-center space-x-2 relative z-10">
-        {[...Array(24)].map((_, i) => (
-          <div key={i} className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />
+      <div className="w-full bg-blue-800 h-2 md:h-3 flex items-center justify-center space-x-1 relative z-50">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="w-1.5 h-1.5 md:w-2 md:h-2 bg-yellow-400 rounded-full animate-pulse" />
         ))}
       </div>
 
-      <header className="w-full max-w-5xl px-6 pt-12 pb-6 text-center relative z-10">
+      <header className="w-full max-w-5xl px-4 pt-10 md:pt-16 pb-8 text-center relative z-10">
         <AppLogo />
       </header>
 
-      <nav className="sticky top-0 z-50 w-full bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/50 mb-12 shadow-2xl">
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between h-20">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar py-2">
-            <NavItem active={activeTab === 'leaderboard'} onClick={() => setActiveTab('leaderboard')} icon={<Trophy size={20}/>} label="Top Tech Villains" prominent={true} />
-            <NavItem active={activeTab === 'feed'} onClick={() => setActiveTab('feed')} icon={<LayoutDashboard size={18}/>} label="The Dossiers" />
-            <NavItem active={activeTab === 'audit'} onClick={() => setActiveTab('audit')} icon={<UserSearch size={18}/>} label="Audit Office" />
-          </div>
-
-          <div className="relative group hidden lg:block">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search Archives back to 2000..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-500 w-64 transition-all outline-none font-mono"
-            />
+      <nav className="sticky top-0 z-[60] w-full bg-slate-950/95 backdrop-blur-2xl border-b-4 border-blue-900 mb-6 md:mb-12 shadow-2xl">
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-center min-h-[4rem] md:min-h-[5rem] py-2">
+          <div className="flex gap-4 scroll-smooth">
+            <NavItem active={activeTab === 'leaderboard'} onClick={() => setActiveTab('leaderboard')} icon={<Trophy size={18}/>} label="Top Tech Villains" prominent={true} />
+            <NavItem active={activeTab === 'audit'} onClick={() => setActiveTab('audit')} icon={<UserSearch size={18}/>} label="Bro-vestigation tool" />
           </div>
         </div>
       </nav>
 
-      <main className="w-full max-w-3xl px-6 min-h-[60vh] relative z-10">
+      <main className="w-full max-w-4xl px-4 md:px-6 min-h-[60vh] relative z-10">
         {isAuditing ? (
-          <div className="text-center py-32 space-y-6">
+          <div className="text-center py-20 md:py-32 px-6 space-y-8 bg-slate-900/40 rounded-[2rem] md:rounded-[3rem] border-4 border-dashed border-blue-900">
             <RefreshCw size={48} className="text-blue-500 animate-spin mx-auto" />
-            <h3 className="text-2xl font-mono text-white uppercase tracking-tighter">{loadingMessage}</h3>
-            <p className="text-slate-600 text-xs font-black uppercase">Form 27-B In Progress</p>
+            <div className="space-y-4">
+              <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter max-w-md mx-auto">{loadingMessage}</h3>
+              <p className="text-blue-500 text-[10px] md:text-xs font-black uppercase tracking-[0.4em]">European Investigative Status: Active Interrogation</p>
+            </div>
           </div>
         ) : (
           <>
-            {activeTab === 'leaderboard' && <Leaderboard stats={ceoStats} />}
-            
-            {activeTab === 'feed' && (
-              <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="flex flex-col gap-4 p-6 bg-slate-900/50 rounded-3xl border border-slate-800/50 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/5 rotate-45 translate-x-16 -translate-y-16" />
-                  
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex flex-col">
-                      <h2 className="text-xl font-black text-white uppercase flex items-center gap-2">
-                        <Scale size={20} className="text-blue-500"/>
-                        Registry Archives
-                      </h2>
-                      <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mt-1">
-                        {filteredMisdeeds.length} Dossiers Logged • 2000 - 2026 Historical Scan
-                      </p>
-                    </div>
-                    
-                    <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
-                      <SortBtn active={sortBy === 'recency'} onClick={() => setSortBy('recency')} icon={<Calendar size={14} />} label="Newest" />
-                      <SortBtn active={sortBy === 'oldest'} onClick={() => setSortBy('oldest')} icon={<Calendar size={14} />} label="Oldest" />
-                      <SortBtn active={sortBy === 'villainy'} onClick={() => setSortBy('villainy')} icon={<Trophy size={14} />} label="Villainy" />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3 border-t border-slate-800/50 pt-4">
-                    <span className="text-[10px] text-slate-600 font-black uppercase tracking-widest flex items-center gap-2">
-                      <Filter size={14} /> Criteria Filter:
-                    </span>
-                    <button 
-                      onClick={() => setHubrisOnly(!hubrisOnly)}
-                      className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all border ${hubrisOnly ? 'bg-orange-600 border-orange-400 text-white shadow-lg' : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'}`}
-                    >
-                      Unchecked Hubris Only
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="grid gap-6">
-                  {paginatedMisdeeds.map(m => <MisdeedCard key={m.id} misdeed={m} />)}
-                  {paginatedMisdeeds.length === 0 && (
-                    <div className="text-center py-20 text-slate-500 bg-slate-900/20 rounded-3xl border border-dashed border-slate-800">
-                      <AlertTriangle className="mx-auto mb-4 opacity-20" size={48} />
-                      <p className="font-bold uppercase text-xs tracking-widest">No documentation found in this segment of the archive.</p>
-                    </div>
-                  )}
-                </div>
-
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-4 mt-12 py-8 border-t border-slate-900">
-                    <button 
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(p => p - 1)}
-                      className="p-3 rounded-xl bg-slate-900 border border-slate-800 disabled:opacity-30 hover:bg-slate-800 transition-all"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    <div className="flex gap-2 font-mono">
-                        {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                            const p = i + 1;
-                            return (
-                                <button 
-                                    key={p}
-                                    onClick={() => setCurrentPage(p)}
-                                    className={`w-10 h-10 rounded-xl font-bold border transition-all ${currentPage === p ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-900 border-slate-800 text-slate-500'}`}
-                                >
-                                    {p}
-                                </button>
-                            )
-                        })}
-                    </div>
-                    <button 
-                      disabled={currentPage === totalPages}
-                      onClick={() => setCurrentPage(p => p + 1)}
-                      className="p-3 rounded-xl bg-slate-900 border border-slate-800 disabled:opacity-30 hover:bg-slate-800 transition-all"
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                  </div>
-                )}
+            {activeTab === 'leaderboard' && <Leaderboard stats={ceoStats} misdeeds={misdeeds} />}
+            {activeTab === 'audit' && (
+              <div className="animate-in fade-in zoom-in-95 duration-500">
+                <SearchAudit onAudit={handleAudit} isLoading={isAuditing} />
               </div>
             )}
-            
-            {activeTab === 'audit' && <SearchAudit onAudit={handleAudit} isLoading={isAuditing} />}
           </>
         )}
       </main>
 
-      <footer className="mt-20 text-center opacity-30 text-[10px] font-mono uppercase tracking-widest px-6 pb-12">
-        <p>© 2024 European Registry Office • Section 42 Bureaucracy Division</p>
-        <p className="mt-2">Coffee Stains Mandatory on all printed documents</p>
+      <footer className="mt-20 md:mt-32 w-full max-w-4xl border-t-4 border-slate-900 pt-10 text-center opacity-40 px-6 pb-20">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex gap-2">
+            {[...Array(5)].map((_, i) => <div key={i} className="w-5 h-5 md:w-6 md:h-6 bg-blue-700 rounded-sm" />)}
+          </div>
+          <p className="text-[10px] md:text-[12px] font-mono uppercase tracking-[0.3em]">
+            European Registry of Tech Malpractice • Bureau 11
+          </p>
+          <p className="text-[8px] md:text-[10px] font-medium leading-relaxed italic max-w-md">
+            Transparency regarding illegal business is mandatory. Attempts to influence the registry via secret lobbying will be met with a strongly worded letter and additional administrative friction.
+          </p>
+        </div>
       </footer>
     </div>
   );
@@ -286,19 +185,9 @@ const App: React.FC = () => {
 const NavItem = ({ active, onClick, icon, label, prominent }: any) => (
   <button 
     onClick={onClick}
-    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black transition-all text-[12px] uppercase tracking-tighter whitespace-nowrap border-2 ${active ? (prominent ? 'bg-orange-600 border-orange-400 text-white shadow-2xl scale-105' : 'bg-blue-600 border-blue-400 text-white') : 'border-transparent text-slate-500 hover:text-white hover:bg-slate-900'}`}
+    className={`flex items-center gap-3 px-6 md:px-10 py-3 md:py-4 rounded-lg font-black transition-all text-[12px] md:text-[15px] uppercase tracking-tighter whitespace-nowrap border-b-4 ${active ? (prominent ? 'bg-blue-700 border-blue-400 text-white shadow-2xl' : 'bg-slate-800 border-blue-600 text-white') : 'border-transparent text-slate-500 hover:text-white hover:bg-slate-900'}`}
   >
     {icon} <span>{label}</span>
-  </button>
-);
-
-const SortBtn = ({ active, onClick, label, icon }: any) => (
-  <button 
-    onClick={onClick}
-    className={`px-4 py-2 text-[10px] font-black uppercase rounded-lg transition-all flex items-center justify-center gap-2 flex-1 text-center whitespace-nowrap ${active ? 'bg-slate-800 text-blue-400 border border-blue-500/20 shadow-inner' : 'text-slate-600 hover:text-slate-400'}`}
-  >
-    {icon}
-    {label}
   </button>
 );
 

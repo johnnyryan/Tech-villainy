@@ -1,6 +1,6 @@
 {
-  "name": "Copy of The Brussels Registry: Tech Villain Audit",
-  "description": "A European-perspective tracking tool for the most questionable moves by Big Tech CEOs, complete with a villainy scoreboard and real-time live auditing.",
+  "name": "The Brussels Registry: Tech Villain Audit",
+  "description": "A European tracking tool for Big Tech malfeasance, featuring a villainy scoreboard and real-time auditing.",
   "requestFramePermissions": [
     "geolocation"
   ]
