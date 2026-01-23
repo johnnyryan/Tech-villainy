@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Trophy, RefreshCw, Scale, UserSearch, ClipboardList, Stamp, Coffee } from 'lucide-react';
+import { Trophy, RefreshCw, Scale, UserSearch, Stamp, Coffee } from 'lucide-react';
 import { Misdeed, CEOStats } from './types';
 import { INITIAL_MISDEEDS, APP_NAME } from './constants';
 import Leaderboard from './components/Leaderboard';
@@ -8,7 +8,7 @@ import SearchAudit from './components/SearchAudit';
 import { auditCEO } from './geminiService';
 
 const BUREAUCRATIC_MESSAGES = [
-  "Auditing Silicon Valley visionary bros...",
+  "Interrogating Silicon Valley bros...",
   "Calculating administrative hubris tax...",
   "Applying GDPR compliance filters...",
   "Verifying evidence in triplicate...",
@@ -150,7 +150,7 @@ const App: React.FC = () => {
             <RefreshCw size={48} className="text-blue-500 animate-spin mx-auto" />
             <div className="space-y-4">
               <h3 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter max-w-md mx-auto">{loadingMessage}</h3>
-              <p className="text-blue-500 text-[10px] md:text-xs font-black uppercase tracking-[0.4em]">European Investigative Status: Active Interrogation</p>
+              <p className="text-blue-500 text-[10px] md:text-xs font-black uppercase tracking-[0.4em]">European Investigative Status: Interrogation Active</p>
             </div>
           </div>
         ) : (
